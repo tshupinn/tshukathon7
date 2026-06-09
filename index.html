@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>厝客松｜個人書審履歷庫</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
+        body { font-family: 'Noto Sans TC', sans-serif; }
+        
+        /* 強制列印時保持網格與排版 */
+        @media print {
+            .print\:hidden { display: none !important; }
+            .print\:block { display: block !important; }
+            .print\:m-0 { margin: 0 !important; }
+            .print\:p-0 { padding: 0 !important; }
+            .print\:grid { display: grid !important; }
+            .print\:grid-cols-\[280px_1fr\] { grid-template-columns: 280px 1fr !important; }
+            .print\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+            .print\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+            .print\:gap-6 { gap: 1.5rem !important; }
+            .print\:shadow-none { box-shadow: none !important; }
+            
+            /* 新增：避免區塊在列印時被切成兩半 */
+            .print-avoid-break { break-inside: avoid; page-break-inside: avoid; }
+            
+            body { background-color: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            @page { margin: 0.5cm; }
+            
+            /* 強制斷頁 */
+            .page-break-after { page-break-after: always; margin-bottom: 2cm;}
+        }
+    </style>
+</head>
+<body class="bg-[#f4f7f5] antialiased text-slate-700">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // ==========================================
+        // 💡 您的專屬資料庫 API 網址：
+        // ==========================================
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzGjMB6hlGKVToWl_tou5L8WZK_KmH2QXUNNabLAjp_NQ-poICaxwn85vfxvDLACh7Mug/exec"; 
+
+        const { useState, useEffect, useRef } = React;
+
+        // 🌟 穩定版圖示元件：隔離 DOM 操作，防止 React 崩潰跳掉
+        const Icon = ({ name, className }) => {
+            const spanRef = useRef(null);
+            useEffect(() => {
+                if (spanRef.current) {
+                    // 將 i 標籤放在 span 裡面，讓 lucide 只在 span 內部轉換，不影響外層 React
+                    spanRef.current.innerHTML = `<i data-lucide="${name}" class="${className || ''}"></i>`;
+                    lucide.createIcons({ root: spanRef.current });
+                }
+            }, [name, className]);
+            return <span ref={spanRef} className="inline-flex items-center justify-center"></span>;
+        };
+
+        // 🌟 系統防護罩 (Error Boundary)
+        class ErrorBoundary extends React.Component {
+            constructor(props) {
+                super(props);
+                this.state = { hasError: false, errorMsg: '' };
+            }
+            static getDerivedStateFromError(error) {
+                return { hasError: true, errorMsg: error.toString() };
+            }
+            render() {
+                if (this.state.hasError) {
+                    return (
+                        <div className="min-h-screen flex items-center justify-center bg-red-50 p-6">
+                            <div className="bg-white p-8 rounded-2xl shadow-xl max-w-lg border border-red-200">
+                                <h1 className="text-xl font-bold text-red-600 mb-4 flex items-center gap-2">⚠️ 系統載入發生異常</h1>
+                                <p className="text-slate-600 text-sm mb-4">很抱歉，介面在讀取資料時遇到了無法解析的問題。這通常是因為試算表回傳的資料格式不符。</p>
+                                <div className="bg-slate-100 p-4 rounded-lg text-xs font-mono text-slate-800 break-words">{this.state.errorMsg}</div>
+                                <button onClick={() => window.location.reload()} className="mt-6 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-bold w-full hover:bg-red-700">重新整理頁面</button>
+                            </div>
+                        </div>
+                    );
+                }
+                return this.props.children; 
+            }
+        }
+
+        // 自動將 Google Drive 預覽連結轉換為直連圖片網址
+        const parseImageUrl = (url) => {
+            if (!url) return "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&h=200&q=80";
+            const driveRegex = /drive\.google\.com\/file\/d\/([^/]+)/;
+            const match = url.match(driveRegex);
+            if (match) {
+                return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+            }
+            return url;
+        };
+
+        // 確保網址包含 https
+        const formatUrl = (url) => {
+            if (!url) return "#";
+            return url.startsWith('http') ? url : `https://${url}`;
+        };
+
+        const DirectoryView = ({ candidates, onSelectCandidate, isLive, onBatchPrint }) => {
+          const [searchTerm, setSearchTerm] = useState("");
+          const [selectedCategory, setSelectedCategory] = useState("全部");
+          const [selectedTeam, setSelectedTeam] = useState("所有組別");
+
+          const categories = ["全部", "待媒合", "媒合中", "已媒合"];
+          const availableTeams = ["所有組別", "第一組", "第二組", "第三組", "第四組", "第五組", "第六組", "第七組"];
+
+          // 安全過濾陣列
+          const safeCandidates = Array.isArray(candidates) ? candidates : [];
+          
+          const filteredCandidates = safeCandidates.filter(candidate => {
+            const matchesSearch = candidate.name && candidate.name.toLowerCase().includes(searchTerm.toLowerCase());
+            let matchCat = true;
+            if (selectedCategory === "待媒合") matchCat = !candidate.matchStatus || candidate.matchStatus === "pending";
+            if (selectedCategory === "媒合中") matchCat = candidate.matchStatus === "processing";
+            if (selectedCategory === "已媒合") matchCat = candidate.matchStatus === "matched";
+            const matchesTeam = selectedTeam === "所有組別" || candidate.assignedTeam === selectedTeam;
+            return matchesSearch && matchCat && matchesTeam;
+          });
+
+          return (
+            <div className="mx-auto max-w-5xl space-y-6">
+              <div className="bg-white p-6 rounded-3xl shadow-sm border border-emerald-100/30 flex flex-col gap-5">
+                
+                <div className="flex flex-wrap items-start justify-between gap-4 w-full">
+                  <div className="flex-shrink-0 flex flex-col justify-center min-w-[300px]">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold tracking-wider text-[#5DAC81] uppercase">TSHUKATHON PORTAL</span>
+                      {isLive ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] bg-[#f0f7f3] text-[#428C64] px-2 py-0.5 rounded-full border border-[#5DAC81]/20">
+                          <Icon name="wifi" className="h-3 w-3 animate-pulse" /> 試算表雙向同步中
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-[10px] bg-slate-50 text-slate-500 px-2 py-0.5 rounded-full border border-slate-200">
+                          <Icon name="wifi-off" className="h-3 w-3" /> 離線測試模式
+                        </span>
+                      )}
+                    </div>
+                    <h1 className="text-2xl font-bold text-slate-800 whitespace-nowrap mt-2">厝客松｜個人書審履歷庫</h1>
+                  </div>
+
+                  <div className="flex flex-row flex-wrap justify-end gap-3 mt-1 sm:mt-0">
+                    <button onClick={onBatchPrint} className="px-4 py-2 bg-slate-800 text-white rounded-full text-xs font-bold shadow hover:bg-slate-700 transition flex items-center gap-2">
+                        <Icon name="printer" className="h-3.5 w-3.5" /> 批次匯出全部履歷 (PDF)
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3 w-full border-t border-slate-100 pt-5">
+                  <div className="relative flex-grow">
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#5DAC81]/70"><Icon name="search" className="h-4 w-4" /></div>
+                    <input type="text" placeholder="搜尋姓名..." className="pl-9 pr-4 py-2 bg-[#f4f7f5] border border-emerald-100/40 focus:border-[#5DAC81] rounded-xl text-sm focus:outline-none w-full" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                  </div>
+                  <select className="px-4 py-2 bg-[#f4f7f5] border border-emerald-100/40 focus:border-[#5DAC81] rounded-xl text-sm outline-none cursor-pointer" value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
+                    {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                  <select className="px-4 py-2 bg-[#f4f7f5] border border-emerald-100/40 focus:border-[#5DAC81] rounded-xl text-sm outline-none cursor-pointer" value={selectedTeam} onChange={(e) => setSelectedTeam(e.target.value)}>
+                    {availableTeams.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+
+              </div>
+
+              {filteredCandidates.length === 0 ? (
+                  <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-200">
+                      <Icon name="inbox" className="h-10 w-10 mx-auto text-slate-300 mb-3" />
+                      <p className="text-slate-500 font-medium">目前資料庫沒有履歷資料</p>
+                      <p className="text-xs text-slate-400 mt-1">請確認您的表單是否有人填寫，或稍後再重新整理頁面。</p>
+                  </div>
+              ) : (
+                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    {filteredCandidates.map(candidate => (
+                      <div key={candidate.id} className="group bg-white rounded-3xl border border-[#5DAC81]/20 overflow-hidden shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col h-full transform hover:-translate-y-1" onClick={() => onSelectCandidate(candidate)}>
+                        <div className="bg-gradient-to-br from-[#5DAC81] to-[#78C29B] p-5 text-white relative">
+                           <div className="flex justify-between items-start min-h-[70px]">
+                             <div className="flex gap-1.5 flex-wrap">
+                               {candidate.matchStatus === 'matched' && <span className="text-[10px] font-bold bg-[#1b3d2a]/50 px-2 py-0.5 rounded border border-white/20 shadow-sm">已媒合</span>}
+                               {candidate.matchStatus === 'processing' && <span className="text-[10px] font-bold bg-blue-400/50 px-2 py-0.5 rounded border border-white/20 shadow-sm">媒合中</span>}
+                               {(!candidate.matchStatus || candidate.matchStatus === 'pending') && <span className="text-[10px] font-bold bg-white/20 px-2 py-0.5 rounded border border-white/10 shadow-sm">待媒合</span>}
+                               {candidate.assignedTeam && <span className="text-[10px] font-bold bg-white text-[#428C64] px-2 py-0.5 rounded shadow-sm">{candidate.assignedTeam}</span>}
+                             </div>
+                             <span className="text-[10px] font-mono font-bold bg-white/20 px-2 py-0.5 rounded border border-white/30 shadow-sm">#{candidate.id}</span>
+                           </div>
+                           <h3 className="text-lg font-extrabold mt-2 tracking-wide">{candidate.name || '未填寫姓名'}</h3>
+                           <p className="text-[11px] font-semibold mt-1 opacity-90 truncate">{candidate.school} / {candidate.major}</p>
+                        </div>
+                        <div className="p-5 flex flex-col flex-grow">
+                          <div className="flex flex-wrap gap-1.5 mt-auto">
+                            {candidate.candidateSkills?.slice(0,3).map(skill => (
+                              <span key={skill} className="px-2 py-1 bg-[#f0f7f3] text-[#428C64] text-[10px] font-semibold rounded-md border border-[#5DAC81]/20">{skill}</span>
+                            ))}
+                            {candidate.candidateSkills?.length > 3 && (
+                                <span className="px-2 py-1 bg-slate-50 text-slate-400 text-[10px] font-semibold rounded-md">+{candidate.candidateSkills.length - 3}</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+              )}
+            </div>
+          );
+        };
+
+        const UniquelyBrandedProfile = ({ candidate }) => {
+          return (
+            <div className="space-y-6 w-full max-w-4xl mx-auto page-break-after">
+              
+              <div className="flex justify-end mb-2 print:hidden">
+                <div className="bg-white px-4 py-1.5 rounded-full border border-slate-200 shadow-sm text-xs font-mono font-bold text-slate-600 flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#5DAC81]"></div>報名編號 #{candidate.id}
+                </div>
+              </div>
+
+              {/* 強制加入 print:grid 相關 class 保證左右排版 */}
+              <div className="grid gap-6 md:grid-cols-[280px_1fr] print:grid print:grid-cols-[280px_1fr] print:gap-6 items-stretch print-avoid-break">
+                
+                <div className="bg-white rounded-3xl p-6 border border-[#cae3d6]/50 shadow-sm print:shadow-none flex flex-col items-center justify-center text-center relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-[#f0f7f3] rounded-full blur-3xl -z-0"></div>
+                  <img src={parseImageUrl(candidate.avatar)} alt={candidate.name} className="w-24 h-24 rounded-2xl object-cover ring-4 ring-[#edf5f1] shadow-md z-10" />
+                  <h2 className="text-xl font-bold text-slate-800 mt-4 z-10">{candidate.name}</h2>
+                  
+                  <div className="w-full mt-5 bg-[#f0f7f3] rounded-2xl border border-[#cae3d6]/60 p-4 flex flex-col items-start space-y-2.5 z-10">
+                    <div className="flex items-center gap-2.5"><Icon name="calendar" className="h-4 w-4 text-[#5DAC81]" /><span className="text-xs font-medium text-slate-600">{candidate.birthDate || "未提供"}</span></div>
+                    <div className="w-full h-px bg-[#cae3d6]/60"></div>
+                    <div className="flex items-center gap-2.5"><Icon name="mail" className="h-4 w-4 text-[#5DAC81]" /><span className="text-[11px] font-medium text-slate-600 break-all">{candidate.email}</span></div>
+                    <div className="w-full h-px bg-[#cae3d6]/60"></div>
+                    <div className="flex items-center gap-2.5"><Icon name="phone" className="h-4 w-4 text-[#5DAC81]" /><span className="text-xs font-medium text-slate-600">{candidate.phone}</span></div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-3xl p-8 border border-[#cae3d6]/50 shadow-sm print:shadow-none flex flex-col justify-between gap-6 relative overflow-hidden">
+                  <div className="absolute -bottom-10 -right-10 w-44 h-44 bg-[#eaf4ef]/50 rounded-full blur-3xl"></div>
+                  <div className="flex-1 relative z-10">
+                    <div className="inline-flex items-center gap-1.5 rounded-full bg-slate-50 px-3 py-1 text-[11px] font-bold text-slate-500 border border-slate-100 mb-3"><Icon name="user" className="h-3 w-3" /> 個人背景介紹</div>
+                    <p className="text-[13px] text-justify text-slate-600 leading-relaxed whitespace-pre-wrap">{candidate.intro}</p>
+                  </div>
+                  <div className="w-full h-px bg-slate-200/60 my-1 relative z-10"></div>
+                  <div className="flex-1 relative z-10">
+                    <div className="inline-flex items-center gap-1.5 rounded-full bg-[#f0f7f3] px-3 py-1 text-[11px] font-bold text-[#428C64] border border-[#5DAC81]/20 mb-3"><Icon name="compass" className="h-3 w-3" /> 參賽動機</div>
+                    <p className="text-[13px] text-justify text-slate-600 leading-relaxed whitespace-pre-wrap">{candidate.motivation}</p>
+                  </div>
+                </div>
+
+              </div>
+
+              <div className="space-y-6 w-full">
+                
+                {/* 加上 print-avoid-break */}
+                <div className="bg-white rounded-3xl p-6 md:p-8 border border-[#cae3d6]/50 shadow-sm print:shadow-none relative print-avoid-break">
+                  <h3 className="text-sm font-extrabold text-slate-800 uppercase flex items-center gap-2 pb-2 border-b border-slate-100 mb-4">
+                    <Icon name="graduation-cap" className="h-4.5 w-4.5 text-[#5DAC81]" /> 學歷背景 (EDUCATION)
+                  </h3>
+                  <div className="p-5 bg-[#f6f9f8]/80 rounded-2xl border border-emerald-100/20">
+                    <h4 className="text-lg font-extrabold text-[#27323f]">{candidate.school}</h4>
+                    <p className="text-sm font-bold text-[#528e64] mt-1">{candidate.major} {candidate.eduDegree}</p>
+                  </div>
+                </div>
+
+                {/* 加上 print-avoid-break */}
+                <div className="bg-white rounded-3xl p-6 md:p-8 border border-[#cae3d6]/50 shadow-sm print:shadow-none print-avoid-break">
+                  <h3 className="text-sm font-extrabold text-slate-800 uppercase flex items-center gap-2 pb-2 border-b border-slate-100 mb-4">
+                    <Icon name="briefcase" className="h-4.5 w-4.5 text-[#5DAC81]" /> 工作經歷 (WORK EXPERIENCE)
+                  </h3>
+                  <div className="space-y-4">
+                    {candidate.workHistory?.map((job, idx) => (
+                      <div key={idx} className="p-5 bg-[#f6f9f8]/80 rounded-2xl border border-emerald-100/20">
+                        <div className="flex gap-x-3 items-baseline">
+                           <h4 className="text-lg font-extrabold text-[#27323f]">{job.title}</h4>
+                           <span className="text-sm font-bold">{job.period}</span>
+                        </div>
+                        <p className="text-sm font-bold text-[#528e64]">{job.company}</p>
+                        <p className="text-[13px] text-slate-600 mt-2 leading-relaxed whitespace-pre-wrap">{job.desc}</p>
+                      </div>
+                    ))}
+                    {(!candidate.workHistory || candidate.workHistory.length === 0) && <p className="text-sm text-slate-400 italic">尚未填寫</p>}
+                  </div>
+                </div>
+
+                {/* 加上 print-avoid-break 確保專題作品不會被切半 */}
+                <div className="bg-white rounded-3xl p-6 md:p-8 border border-[#cae3d6]/50 shadow-sm print:shadow-none print-avoid-break">
+                  <h3 className="text-sm font-extrabold text-slate-800 uppercase flex items-center gap-2 pb-4 border-b border-slate-100 mb-6">
+                    <Icon name="sparkles" className="h-4.5 w-4.5 text-[#5DAC81]" /> 專題作品與連結 (FEATURED PROJECTS)
+                  </h3>
+                  
+                  <div className="grid gap-5 sm:grid-cols-3 print:grid print:grid-cols-3">
+                    {candidate.visualProjects?.map((proj, idx) => (
+                      <div key={idx} className="rounded-2xl overflow-hidden bg-[#fbfdfc] border border-slate-100 flex flex-col hover:border-[#5DAC81]/40 transition-colors">
+                        <div className="aspect-video bg-slate-100">
+                          <img src={parseImageUrl(proj.image)} className="w-full h-full object-cover" />
+                        </div>
+                        <div className="p-4 flex flex-col flex-grow bg-white">
+                          <h4 className="font-bold text-slate-800 text-sm truncate">{proj.title}</h4>
+                          <p className="text-xs text-slate-500 mt-1.5 flex-grow">{proj.desc}</p>
+                          {proj.url && (
+                             <a href={formatUrl(proj.url)} target="_blank" rel="noopener noreferrer" className="mt-3 py-1.5 bg-[#f0f7f3] hover:bg-[#eaf4ef] text-[#428C64] text-[11px] font-bold rounded-lg text-center block print:hidden transition-colors">
+                                查看專案網址 <Icon name="external-link" className="h-3 w-3 inline ml-0.5 mb-0.5" />
+                             </a>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                    
+                    {/* QR Code 生成區塊 */}
+                    <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[#cae3d6] bg-[#fbfdfc] p-6 text-center h-full min-h-[180px]">
+                      {candidate.portfolio ? (
+                        <>
+                          <div className="bg-white p-2 rounded-xl shadow-sm mb-2 border border-slate-100">
+                             <img src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(formatUrl(candidate.portfolio))}`} alt="QR Code" className="w-20 h-20" />
+                          </div>
+                          <span className="bg-[#5DAC81] text-white text-[10px] px-2 py-0.5 rounded-full font-bold mb-1">完整作品集或 LinkedIn</span>
+                          <p className="text-[9px] text-slate-400 break-all w-full leading-tight">{candidate.portfolio}</p>
+                        </>
+                      ) : (
+                        <>
+                            <Icon name="qr-code" className="h-8 w-8 text-slate-200 mb-2" />
+                            <p className="text-xs font-bold text-slate-400">未提供作品集連結</p>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 加上 print-avoid-break */}
+                <div className="grid gap-6 md:grid-cols-2 print:grid print:grid-cols-2 items-stretch print-avoid-break">
+                  <div className="bg-white rounded-3xl p-6 border border-[#cae3d6]/50 shadow-sm print:shadow-none">
+                    <h3 className="text-sm font-extrabold text-slate-800 uppercase flex items-center gap-2 pb-2 border-b border-slate-100 mb-4"><Icon name="trophy" className="h-4.5 w-4.5 text-[#5DAC81]" /> 特殊經歷</h3>
+                    <div className="space-y-3">
+                      {candidate.experiences?.map((exp, idx) => (
+                        <div key={idx} className="flex gap-2.5 items-start"><div className="w-1.5 h-1.5 mt-1.5 rounded-full bg-[#5DAC81] shrink-0"></div><p className="text-[13px] text-slate-700">{exp}</p></div>
+                      ))}
+                      {(!candidate.experiences || candidate.experiences.length === 0) && <p className="text-sm text-slate-400 italic">尚未填寫</p>}
+                    </div>
+                  </div>
+                  
+                  <div className="bg-white rounded-3xl p-6 border border-[#cae3d6]/50 shadow-sm print:shadow-none flex flex-col">
+                    <h3 className="text-sm font-extrabold text-slate-800 uppercase flex items-center gap-2 pb-2 border-b border-slate-100 mb-4"><Icon name="layout" className="h-4.5 w-4.5 text-[#5DAC81]" /> 核心技能標籤</h3>
+                    <div className="flex flex-wrap gap-2 content-start">
+                      {candidate.skills?.map((skill) => (
+                        <span key={skill} className="rounded-lg bg-[#f0f7f3] px-3 py-1.5 text-xs font-semibold text-[#428C64] border border-[#5DAC81]/20">{skill}</span>
+                      ))}
+                      {(!candidate.skills || candidate.skills.length === 0) && <p className="text-sm text-slate-400 italic">尚未填寫</p>}
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          );
+        };
+
+        const DetailView = ({ candidate, onBack }) => {
+          const [matchStatus, setMatchStatus] = useState(candidate.matchStatus || "pending");
+          const [assignedTeam, setAssignedTeam] = useState(candidate.assignedTeam || "");
+          const [selectedSkills, setSelectedSkills] = useState(candidate.candidateSkills || []);
+          const [matchNote, setMatchNote] = useState(candidate.matchNote || ""); 
+          
+          const [isSaving, setIsSaving] = useState(false);
+          const [saveStatus, setSaveStatus] = useState(null);
+
+          const availableSkills = ["簡報提案", "資料處理", "財務計算", "建築規劃", "軟體操作", "其他特長"];
+
+          const handleToggleSkill = (skill) => setSelectedSkills(prev => prev.includes(skill) ? prev.filter(s => s !== skill) : [...prev, skill]);
+
+          const handleClear = () => {
+              setMatchStatus("pending");
+              setAssignedTeam("");
+              setSelectedSkills([]);
+              setMatchNote("");
+          }
+
+          const handleSaveToDatabase = async () => {
+            const payload = { id: candidate.id, matchStatus, assignedTeam, candidateSkills: selectedSkills, matchNote };
+            setIsSaving(true);
+            setSaveStatus(null);
+            try {
+              await fetch(GAS_WEB_APP_URL, {
+                method: 'POST',
+                mode: 'no-cors', 
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify(payload)
+              });
+              
+              // 立即更新前端狀態
+              candidate.matchStatus = matchStatus;
+              candidate.assignedTeam = assignedTeam;
+              candidate.candidateSkills = selectedSkills;
+              candidate.matchNote = matchNote;
+
+              setIsSaving(false);
+              setSaveStatus('success');
+              setTimeout(() => setSaveStatus(null), 3000);
+            } catch (error) {
+              console.error("寫入失敗", error);
+              setIsSaving(false);
+              setSaveStatus('error');
+            }
+          };
+
+          return (
+            <div className="mx-auto max-w-4xl animate-in fade-in duration-500">
+              <div className="mb-6 flex gap-3 justify-between items-center print:hidden">
+                <button onClick={onBack} className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-[#5DAC81] bg-white px-4 py-2 rounded-full border border-slate-200 shadow-sm transition-colors"><Icon name="chevron-left" className="h-4 w-4" /> 返回</button>
+                <button onClick={()=>window.print()} className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-full text-xs font-bold shadow-md transition-colors"><Icon name="printer" className="h-3.5 w-3.5 inline mr-1 mb-0.5" /> 列印單張履歷</button>
+              </div>
+
+              <div className="print:m-0"><UniquelyBrandedProfile candidate={candidate} /></div>
+
+              <div className="bg-white border border-[#5DAC81]/30 rounded-3xl p-6 shadow-sm mt-8 print:hidden">
+                <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><Icon name="message-square" className="h-5 w-5 text-[#5DAC81]" /> 評審作業區</h3>
+                <div className="flex flex-col gap-5">
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="flex-1">
+                       <label className="block text-xs font-semibold text-slate-600 mb-2">媒合狀態</label>
+                       <select value={matchStatus} onChange={(e) => setMatchStatus(e.target.value)} className="w-full pl-4 py-2.5 bg-[#f0f7f3] border border-[#5DAC81]/30 rounded-xl text-sm font-semibold text-[#428C64] outline-none cursor-pointer">
+                         <option value="pending">待媒合 (尚未安排)</option>
+                         <option value="processing">媒合中 (接洽協調中)</option>
+                         <option value="matched">已媒合成功</option>
+                       </select>
+                    </div>
+                    <div className="flex-1">
+                       <label className="block text-xs font-semibold text-slate-600 mb-2">分配組別</label>
+                       <select value={assignedTeam} onChange={(e) => setAssignedTeam(e.target.value)} className="w-full pl-4 py-2.5 bg-[#f4f7f5] border border-[#5DAC81]/30 rounded-xl text-sm outline-none cursor-pointer">
+                         <option value="">-- 未分配 --</option>
+                         {["第一組","第二組","第三組","第四組","第五組","第六組","第七組"].map(t=><option key={t} value={t}>{t}</option>)}
+                       </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 mb-2">標記個人技能屬性 (可複選)</label>
+                    <div className="flex flex-wrap gap-2">
+                      {availableSkills.map((skill) => (
+                        <button key={skill} onClick={() => handleToggleSkill(skill)} className={`px-4 py-1.5 rounded-full text-xs font-bold border transition-colors ${selectedSkills.includes(skill) ? 'bg-[#5DAC81] text-white border-[#5DAC81]' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'}`}>{skill}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 mb-2">媒合備註 (選填)</label>
+                    <textarea rows="2" placeholder="紀錄面試備註或評語..." value={matchNote} onChange={(e) => setMatchNote(e.target.value)} className="w-full bg-[#f6f9f8] border border-[#5DAC81]/30 rounded-xl p-3 text-sm outline-none resize-none focus:border-[#5DAC81] transition-colors"></textarea>
+                  </div>
+                  <div className="pt-2 flex flex-wrap items-center gap-3">
+                    <button onClick={handleSaveToDatabase} disabled={isSaving} className={`px-6 py-2.5 rounded-full text-xs font-bold transition-colors flex items-center gap-2 ${saveStatus==='success'?'bg-emerald-600 text-white':'bg-[#5DAC81] text-white hover:bg-[#428C64]'}`}>
+                      {isSaving ? <><Icon name="loader-2" className="h-3.5 w-3.5 animate-spin"/> 寫入中...</> : saveStatus==='success' ? "✓ 已同步回 Excel" : <><Icon name="save" className="h-3.5 w-3.5"/>儲存寫回資料庫</>}
+                    </button>
+                    <button onClick={handleClear} className="px-4 py-2.5 rounded-full text-xs font-bold border border-rose-200 text-rose-500 hover:bg-rose-50 transition-colors flex items-center gap-1.5">
+                       <Icon name="rotate-ccw" className="h-3.5 w-3.5" /> 清除本頁設定
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        };
+
+        const App = () => {
+          const [selectedCandidate, setSelectedCandidate] = useState(null);
+          const [candidates, setCandidates] = useState([]);
+          const [isLoading, setIsLoading] = useState(true);
+          const [isBatchPrinting, setIsBatchPrinting] = useState(false);
+
+          useEffect(() => {
+            fetch(GAS_WEB_APP_URL)
+              .then(res => res.json())
+              .then(data => { 
+                if(Array.isArray(data)) {
+                  setCandidates(data); 
+                }
+                setIsLoading(false); 
+              })
+              .catch(err => { console.error(err); setIsLoading(false); });
+          }, []);
+
+          const handleBatchPrint = () => {
+              setIsBatchPrinting(true);
+              setTimeout(() => {
+                  window.print();
+                  setIsBatchPrinting(false);
+              }, 1000); // 等待 React 渲染
+          }
+
+          if (isBatchPrinting) {
+              return (
+                 <div className="bg-white min-h-screen print:p-0">
+                    {candidates.map((c, i) => (
+                        <UniquelyBrandedProfile key={i} candidate={c} />
+                    ))}
+                 </div>
+              );
+          }
+
+          return (
+            <div className="min-h-screen p-4 md:p-8 print:p-0">
+              {isLoading && <div className="max-w-5xl mx-auto mb-4 bg-[#f0f7f3] border border-[#5DAC81]/20 p-3 rounded-2xl flex justify-center items-center gap-2 text-xs font-bold text-[#428C64] animate-pulse"><Icon name="loader" className="h-4 w-4 animate-spin" /> 連線同步中...</div>}
+              
+              {!selectedCandidate ? (
+                <DirectoryView candidates={candidates} onSelectCandidate={setSelectedCandidate} isLive={candidates.length > 0} onBatchPrint={handleBatchPrint} />
+              ) : (
+                <DetailView candidate={selectedCandidate} onBack={() => setSelectedCandidate(null)} />
+              )}
+            </div>
+          );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<ErrorBoundary><App /></ErrorBoundary>);
+    </script>
+</body>
+</html>
