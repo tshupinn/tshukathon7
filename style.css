@@ -1789,6 +1789,26 @@ main .sec::before {
   .rule li, .about__body--top p, .work__intro { text-align: left !important; text-justify: auto !important; }
 }
 
+/* 初審／複審／決賽切換：提示文字＋每張卡片右上角的箭頭 */
+.stage-hint + .stage-tabs { margin-top: 14px !important; }
+.stage-hint { margin: clamp(40px, 5vw, 64px) 0 0; display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: var(--text-2); letter-spacing: .04em; }
+.stage-hint__ico { width: 12px; height: 12px; fill: var(--aqua); flex: none; }
+.stage-tabs [role="tab"] { position: relative; cursor: pointer; padding-right: 48px; }
+.stage-tabs__go { position: absolute; top: 12px; right: 12px; width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--line-d); display: grid; place-items: center; color: var(--aqua); transition: background-color 200ms ease, border-color 200ms ease, color 200ms ease; }
+.stage-tabs__go svg { width: 10px; height: 10px; fill: currentColor; transition: transform 220ms var(--ease-out); }
+.stage-tabs [role="tab"][aria-selected="true"] .stage-tabs__go { background: var(--ink); border-color: var(--ink); color: var(--lime); }
+.stage-tabs [role="tab"][aria-selected="true"] .stage-tabs__go svg { transform: rotate(90deg); }
+@media (hover: hover) and (pointer: fine) {
+  .stage-tabs [role="tab"][aria-selected="false"]:hover .stage-tabs__go { border-color: var(--lime); color: var(--lime); }
+  .stage-tabs [role="tab"][aria-selected="false"]:hover .stage-tabs__go svg { transform: translateX(2px); }
+}
+@media (max-width: 560px) {
+  .stage-tabs [role="tab"] { padding-right: 12px; }
+  .stage-tabs__go { top: 8px; right: 8px; width: 22px; height: 22px; }
+  .stage-tabs__go svg { width: 8px; height: 8px; }
+  .stage-hint { font-size: 13px; }
+}
+
 /* =====================================================================
    漂浮動態：銀色物件緩慢飄動、流線左右擺盪、像素箭頭行進
 

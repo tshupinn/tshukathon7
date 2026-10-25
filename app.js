@@ -174,9 +174,11 @@
           '<p class="theme-hero__invite">' + esc(T.invite) + '</p></div>' +
         '<img class="theme-cursor" src="assets/img/cursor.webp" alt="" width="800" height="795" loading="lazy">' +
       '</div>' +
+      '<p class="stage-hint">' + icon('i-play', 'stage-hint__ico') + '<span>點選卡片，切換查看各階段題目</span></p>' +
       '<div class="stage-tabs" role="tablist" aria-label="競賽題目階段">' + T.stages.map(function (g, i) {
         return '<button type="button" role="tab" id="tab-stage-' + g.key + '" aria-controls="stage-' + g.key + '" aria-selected="' + (i === 0) + '" tabindex="' + (i === 0 ? 0 : -1) + '">' +
-          '<span class="stage-tabs__no">0' + (i + 1) + '</span><b>' + esc(g.name) + '</b><small class="nw">' + esc(g.who) + '</small><em>' + esc(g.date) + '</em></button>';
+          '<span class="stage-tabs__no">0' + (i + 1) + '</span><b>' + esc(g.name) + '</b><small class="nw">' + esc(g.who) + '</small><em>' + esc(g.date) + '</em>' +
+          '<span class="stage-tabs__go" aria-hidden="true">' + icon('i-play', '') + '</span></button>';
       }).join('') + '</div>' +
       '<div class="stage" id="stage-first" role="tabpanel" aria-labelledby="tab-stage-first">' +
         '<div class="brief"><h3>初審題目｜' + esc(T.missionSub) + '</h3><p>' + esc(T.brief) + '</p><p class="brief__q">' + esc(T.question) + '</p></div>' +
