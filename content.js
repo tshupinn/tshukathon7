@@ -65,11 +65,11 @@ window.SITE = {
     ],
     /* 「一眼看懂」重點資訊；icon 可用：cap、team、building、flag、calendar、trophy、doc、pin、clock、mail */
     facts: [
-      { icon: "cap", label: "參賽對象", text: "大專院校大二～碩班具備在學學生身份者、\n30 歲（含）以下在職青年" },
+      { icon: "cap", label: "參賽對象", text: "大專院校大二～碩班¦具備在學學生身份者、\n30 歲（含）以下在職青年" },
       { icon: "team", label: "報名方式", text: "個人報名，主辦單位媒合跨校隊伍，每隊\u00a06～7\u00a0人", sub: "（主辦單位將視整體報名狀況調整）" },
       { icon: "building", label: "競賽主題", text: "CITY RE:QUEST 探索城市無限潛能", sub: "- 知識與城市混合，重新定義跨世代產學基地 -" },
-      { icon: "flag", label: "賽制", text: "初審（個人）→ 複審（團隊）→ 黑客松決賽（團隊）", oneLine: true },
-      { icon: "calendar", label: "決賽日期", text: "01.21（四）－01.22（五），實體舉行", sub: "兩天皆為日間活動、不需過夜，約 17:30 結束\n（詳細時間另行公告）" },
+      { icon: "flag", label: "賽制", text: "初審（個人）→¦複審（團隊）→¦黑客松決賽（團隊）", oneLine: true },
+      { icon: "calendar", label: "決賽日期", text: "01.21（四）－01.22（五），實體舉行", sub: "兩天皆為日間活動、¦不需過夜，約 17:30 結束\n（詳細時間另行公告）" },
       { icon: "trophy", label: "獎項", text: "總獎金 11 萬\n決賽前三名享有 CIP 暑期實習面試機會" }
     ],
     lookingFor: [
@@ -89,8 +89,8 @@ window.SITE = {
     title: "競賽報名",
     intro: "全部採個人報名制，不用先找隊友，主辦單位會協助媒合組隊。",
     identities: [
-      { icon: "cap", name: "大專院校學生", rule: "大專院校大二～碩班具備在學學生身份者" },
-      { icon: "team", name: "在職青年", rule: "30 歲（含）以下，對不動產有興趣者" }
+      { icon: "cap", name: "大專院校學生", rule: "大專院校大二～碩班¦具備在學學生身份者" },
+      { icon: "team", name: "在職青年", rule: "30 歲（含）以下，¦對不動產有興趣者" }
     ],
     /* 報名流程：每一步一張卡片（icon 可用 cap、upload、doc、team、flag、calendar…） */
     steps: [
@@ -126,8 +126,8 @@ window.SITE = {
       ] },
       { stage: "複審", who: "團隊", date: "12.27 23:59 前截止", items: [
         "提案企劃：中文簡報 20 頁以內（含封面、封底），可附 8 頁以內相關附件（例如都市計畫重點截圖、參考資料來源）；轉成 PDF，命名為「第X隊_隊名\u2060.\u2060pdf」",
-        "人氣獎作品介紹圖文：一頁式圖文 JPG（1\u2060:\u20601 或 1200×1200 像素、300dpi，編排不拘）＋隊伍名稱、一句 Slogan（15 字內）、提案介紹文案 200 字（Word 檔）",
-        "繳交方式：12.27\u00a023:59 前將【PDF 檔】與【JPG 檔＋Word 檔】寄至厝邊信箱 tshupinn\u2060@\u2060gmail.com，逾期不候；檔案太大可寄雲端連結，並記得開啟分享權限"
+        "人氣獎作品介紹圖文：一頁式圖文 JPG（1\u2060:\u20601 或 1200×1200 像素、300dpi，編排不拘）＋隊伍名稱、一句 Slogan（15 字內）、提案介紹文案 200 字（Word\u00a0檔）",
+        "繳交方式：12.27\u00a023:59 前將【PDF 檔】與【JPG 檔＋Word\u00a0檔】寄至厝邊信箱 tshupinn\u2060@\u2060gmail.com，逾期不候；檔案太大可寄雲端連結，並記得開啟分享權限"
       ] },
       { stage: "決賽", who: "團隊", date: "01.15 隨題目公告", items: ["待公告"] }
     ],

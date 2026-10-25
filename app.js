@@ -16,6 +16,12 @@
   function get(path) {
     return path.split('.').reduce(function (o, k) { return o == null ? o : o[k]; }, S);
   }
+  // 「¦」標記建議換行點：兩邊各自不拆開，空間不夠時從這裡換行；\n 是強制換行
+  function phrase(t) {
+    return String(t).split('\n').map(function (line) {
+      return line.indexOf('¦') < 0 ? esc(line) : line.split('¦').map(function (c) { return '<span class="nw">' + esc(c) + '</span>'; }).join('<wbr>');
+    }).join('<br>');
+  }
   function esc(v) {
     return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
@@ -83,7 +89,7 @@
       '<p class="about__statement">' + esc(A.title) + '</p>' +
       '<div class="about__body about__body--top">' + A.body.map(function (p) { return '<p>' + esc(p) + '</p>'; }).join('') + '</div>' +
       '<dl class="facts">' + A.facts.map(function (f) {
-        return '<div class="fact' + (f.oneLine ? ' fact--one' : '') + '"><dt><span class="fact__ico">' + icon('p-' + f.icon, '') + '</span><span>' + esc(f.label) + '</span></dt><dd>' + esc(f.text).replace(/\n/g, '<br>') + (f.sub ? '<span class="fact__sub">' + esc(f.sub).replace(/\n/g, '<br>') + '</span>' : '') + '</dd></div>';
+        return '<div class="fact' + (f.oneLine ? ' fact--one' : '') + '"><dt><span class="fact__ico">' + icon('p-' + f.icon, '') + '</span><span>' + esc(f.label) + '</span></dt><dd>' + phrase(f.text) + (f.sub ? '<span class="fact__sub">' + phrase(f.sub) + '</span>' : '') + '</dd></div>';
       }).join('') + '</dl>' +
       '<div class="who">' +
         '<div class="who__text"><h3>' + esc(A.whoTitle) + '</h3><p>' + esc(A.who).replace(/\n/g, '<br class="br-d">') + '</p></div>' +
@@ -109,7 +115,7 @@
       '<div class="ids">' +
         G.identities.map(function (x) {
           return '<div class="id-card id-card--plain"><span class="id-card__ico">' + icon('p-' + x.icon, '') + '</span>' +
-            '<div><h3>' + esc(x.name) + '</h3><p>' + esc(x.rule) + '</p></div></div>';
+            '<div><h3>' + esc(x.name) + '</h3><p>' + phrase(x.rule) + '</p></div></div>';
         }).join('') +
       '</div>' +
       (G.intro ? '<p class="ids__note">' + icon('p-team', '') + '<span>' + esc(G.intro) + '</span></p>' : '') +
@@ -170,7 +176,7 @@
       '</div>' +
       '<div class="stage-tabs" role="tablist" aria-label="競賽題目階段">' + T.stages.map(function (g, i) {
         return '<button type="button" role="tab" id="tab-stage-' + g.key + '" aria-controls="stage-' + g.key + '" aria-selected="' + (i === 0) + '" tabindex="' + (i === 0 ? 0 : -1) + '">' +
-          '<span class="stage-tabs__no">0' + (i + 1) + '</span><b>' + esc(g.name) + '</b><small>' + esc(g.who) + '</small><em>' + esc(g.date) + '</em></button>';
+          '<span class="stage-tabs__no">0' + (i + 1) + '</span><b>' + esc(g.name) + '</b><small class="nw">' + esc(g.who) + '</small><em>' + esc(g.date) + '</em></button>';
       }).join('') + '</div>' +
       '<div class="stage" id="stage-first" role="tabpanel" aria-labelledby="tab-stage-first">' +
         '<div class="brief"><h3>初審題目｜' + esc(T.missionSub) + '</h3><p>' + esc(T.brief) + '</p><p class="brief__q">' + esc(T.question) + '</p></div>' +
@@ -295,7 +301,7 @@
         '<div class="perk"><h3>' + icon('p-flag', '') + '入圍決賽</h3><p class="small">' + esc(P.finalists) + '</p></div>' +
         '<div class="perk"><h3>' + icon('p-team', '') + '所有隊伍</h3><p class="small">' + esc(P.everyone) + '</p></div>' +
       '</div>' +
-      '<div class="travel"><div><h3>' + esc(P.travel.title) + '</h3><ol>' + P.travel.rules.map(function (r) { var m = r.match(/^([^：]{2,6})：([\s\S]*)$/); return '<li><span>' + (m ? '<b>' + esc(m[1]) + '</b>：' + esc(m[2]).replace(/\n/g, '<br>') : esc(r).replace(/\n/g, '<br>')) + '</span></li>'; }).join('') + '</ol></div>' +
+      '<div class="travel"><div><h3>' + esc(P.travel.title) + '</h3><ol>' + P.travel.rules.map(function (r) { var m = r.match(/^([^：]{2,6})：([\s\S]*)$/); return '<li><span>' + (m ? '<b>' + esc(m[1]) + '</b>：' + esc(m[2]).replace(/\n/g, '<br class="br-d">') : esc(r).replace(/\n/g, '<br class="br-d">')) + '</span></li>'; }).join('') + '</ol></div>' +
         '<table class="tbl"><thead><tr><th scope="col">出發地</th><th scope="col">補助金額</th></tr></thead><tbody>' +
           P.travel.table.map(function (r) { return '<tr><td>' + esc(r.from) + '</td><td>' + esc(r.amount) + '</td></tr>'; }).join('') +
         '</tbody></table></div>';
@@ -572,10 +578,24 @@
     var CJK = /[㐀-鿿]/;
     var NOBREAK_BEFORE = /^[，。、；：？！」』）》〉…—－～％,.;:?!)\]]/;
     var NOBREAK_AFTER = /[「『（《〈(\[]$/;
+    var win = window;
+    // 專有名詞不拆開（斷詞工具常把它們切成兩段）
+    var KEEP = ['任一', '厝客松', '黑客松', '厝邊', '國泰人壽', '國壽', '不動產', '參賽者', '承諾書', '人氣獎', '業師', '產學', '個案分析', '商業競賽', '雲端資料夾', '報名表單', '初審', '複審', '決賽', '簽到表', '車馬費', '身分證', '交通費'];
+    function keepWords(parts) {
+      // 找出專有名詞所在的字元位置，切點落在名詞中間就把前後兩段合併
+      var text = parts.join(''), inside = {};
+      KEEP.forEach(function (w) { var i = text.indexOf(w); while (i > -1) { for (var j = i + 1; j < i + w.length; j++) inside[j] = 1; i = text.indexOf(w, i + 1); } });
+      var out = [], pos = 0;
+      parts.forEach(function (p) {
+        if (out.length && inside[pos]) out[out.length - 1] += p; else out.push(p);
+        pos += p.length;
+      });
+      return out;
+    }
     var sel = root ? 'p, h2, h3, h4, li, dd, td' : 'main p, main h2, main h3, main h4, main li, main dd, main td, main figcaption, main .ed__title, .foot__note';
     var all = function (s) { return root ? $$(s, root) : $$(s); };
     // 數字範圍（4～7、10.27－11.18、1,000－6,000）整段不換行
-    var RANGE = /[\d][\d,./:]*\s?[～－—~]\s?[\d][\d,./:]*(?:\s?[\u4e00-\u9fff])?[。，、！）]?|\d+\u2060?:\u2060?\d+|[^\s「」，（]+\u2060?\.\u2060?(?:pdf|pptx)|[\w.+-]+⁠?@⁠?[\w-]+(?:\.[\w-]+)+/g;
+    var RANGE = /[\d][\d,./:]*\s?[～－—~]\s?[\d][\d,./:]*(?:\s?[\u4e00-\u9fff])?[。，、！）]?|\d+\u2060?:\u2060?\d+|[^\s「」，（]+\u2060?\.\u2060?(?:pdf|pptx)|[\w.+-]+⁠?@⁠?[\w-]+(?:\.[\w-]+)+|\d[\d,.]*\s?(?:月|日|年|頁|人|隊|票|萬|元|坪|字|號|屆|週|天|位|名|項|次|筆)/g;
     all(sel).forEach(function (el) {
       var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null), list = [], n;
       while ((n = walker.nextNode())) if (RANGE.test(n.nodeValue) && !n.parentNode.closest('.nw')) list.push(n);
@@ -595,10 +615,14 @@
     all(sel).forEach(function (el) {
       if (el.getAttribute('data-cjk')) return; el.setAttribute('data-cjk', '1');
       var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null), nodes = [], n;
-      while ((n = walker.nextNode())) if (CJK.test(n.nodeValue) && !n.parentNode.closest('.nw, svg, script')) nodes.push(n);
+      // 只處理屬於這個段落本身的文字；巢狀清單裡的文字留給內層段落自己處理
+      while ((n = walker.nextNode())) if (CJK.test(n.nodeValue) && !n.parentNode.closest('.nw, svg, script') && n.parentNode.closest('p, h2, h3, h4, li, dd, td, figcaption, .ed__title, .foot__note') === el) nodes.push(n);
       nodes.forEach(function (node, ni) {
-        var parts = Array.from(seg.segment(node.nodeValue)).map(function (s) { return s.segment; });
-        var isLast = ni === nodes.length - 1;
+        var parts = keepWords(Array.from(seg.segment(node.nodeValue)).map(function (s) { return s.segment; }));
+        // 這段文字後面緊接著換行（<br>）或是整段最後一段，都要保護行尾不留單字
+        var nx = node.nextSibling;
+        var beforeBr = nx && nx.nodeName === 'BR' && win.getComputedStyle(nx).display !== 'none';
+        var isLast = ni === nodes.length - 1 || beforeBr;
         // 最後一行至少留 4 個字左右：把尾巴的幾個詞黏在一起
         var tail = 0, glueFrom = parts.length;
         if (isLast) {
@@ -606,17 +630,20 @@
         }
         var frag = document.createDocumentFragment(), buf = '', inTail = false;
         parts.forEach(function (p, k) {
-          var ok = k > 0 && !NOBREAK_BEFORE.test(p) && !NOBREAK_AFTER.test(parts[k - 1]) && !/^\s/.test(p) && !/\s$/.test(parts[k - 1]);
+          // 單一個中文字不單獨跑到下一行開頭（例如「坪｜數」「興安｜街」「廊｜帶」），讓它跟著前一個詞
+          var single = function (x) { return x && x.length === 1 && CJK.test(x); };
+          var ok = k > 0 && !NOBREAK_BEFORE.test(p) && !NOBREAK_AFTER.test(parts[k - 1]) && !/^\s/.test(p) && !/\s$/.test(parts[k - 1]) && !single(p);
           if (isLast && k > glueFrom) ok = false;
-          if (ok) {
-            frag.appendChild(document.createTextNode(buf)); frag.appendChild(document.createElement('wbr')); buf = '';
-            if (isLast && k === glueFrom) inTail = true;
-          }
+          if (ok) { frag.appendChild(document.createTextNode(buf)); frag.appendChild(document.createElement('wbr')); buf = ''; }
+          // 尾巴起點本身不能斷行時，就從上一個斷點開始整段黏住
+          if (isLast && k === glueFrom) inTail = true;
           buf += p;
         });
         if (inTail && buf.length > 1) {
-          // 尾巴包成不換行，最後一行不會只剩一個字
-          var span = document.createElement('span'); span.className = 'nw'; span.textContent = buf; frag.appendChild(span);
+          // 尾巴包成不換行，最後一行不會只剩一個字；遇到空白就從空白後面開始黏，空白本身照常可以換行
+          var sp = buf.match(/^([\s\S]*[ \t\n])([^ \t\n]+)$/);
+          if (sp) frag.appendChild(document.createTextNode(sp[1]));
+          var span = document.createElement('span'); span.className = 'nw'; span.textContent = sp ? sp[2] : buf; frag.appendChild(span);
         } else frag.appendChild(document.createTextNode(buf));
         node.parentNode.replaceChild(frag, node);
       });

@@ -1645,7 +1645,7 @@ main .sec::before {
 @media (min-width: 900px) { .about__body p { max-width: none !important; text-align: justify; } }
 @media (min-width: 900px) { .fact--one dd { white-space: nowrap; font-size: 15px; letter-spacing: -.01em; } }
 .br-d { display: none; }
-@media (min-width: 1100px) { .br-d { display: inline; } }
+@media (min-width: 1280px) { .br-d { display: inline; } }
 @media (min-width: 900px) { .who { grid-template-columns: minmax(0, 1.25fr) minmax(0, .75fr); column-gap: clamp(40px, 5vw, 72px); } .who__text p { max-width: none; } }
 
 /* 競賽報名：說明移到身分卡下方 */
@@ -1783,6 +1783,11 @@ main .sec::before {
 /* 首頁大日期下方的截止時間 */
 .kd__note { margin: 6px 0 0; font-size: 13px; font-weight: 700; letter-spacing: .04em; opacity: .85; }
 .kd__item:first-child .kd__note { color: var(--on-ink); }
+
+/* 手機、平板：左右對齊會把字距拉開（尤其有不拆開的詞時），改成靠左 */
+@media (max-width: 899px) {
+  .rule li, .about__body--top p, .work__intro { text-align: left !important; text-justify: auto !important; }
+}
 
 /* =====================================================================
    漂浮動態：銀色物件緩慢飄動、流線左右擺盪、像素箭頭行進
