@@ -42,7 +42,7 @@ window.SITE = {
     slogan: "知識與城市混合，重新定義跨世代產學基地",
     lead: "個人報名就能參賽，主辦單位幫你媒合跨校隊友，國壽業師陪跑挑戰競賽拿獎金。",
     perks: ["總獎金 11 萬", "決賽前三名保送暑期 CIP 面試", "Mentor 業師輔導"],
-    earlyBird: "11.08（日）前完成早鳥報名，即有機會抽 Marshall 藍牙音響！",
+    earlyBird: "11.08（日）前完成報名並繳件，即可參加 Marshall 藍牙音響抽獎！",
     /* 首頁兩個大日期 */
     keyDates: [
       { label: "報名期間", date: "2026-10-27", end: "2026-11-18", show: "10.27－11.18", note: "截止當天收件至 23:59" },
@@ -197,7 +197,7 @@ window.SITE = {
      start／end：用來判斷現在進行到哪一步，沒有 end 就只看 start 那一天 */
   timeline: [
     { date: "10.27", year: "2026", title: "報名開跑", desc: "填寫報名表，繳交個人題目發想（必繳）與專案作品（選繳）", stage: "初審", start: "2026-10-27", end: "2026-11-18" },
-    { date: "11.08", year: "2026", title: "早鳥報名截止", desc: "早鳥報名有機會抽 Marshall 藍牙音響", stage: "初審", start: "2026-11-08", small: true },
+    { date: "11.08", year: "2026", title: "早鳥報名截止", desc: "完成報名並繳件，即可參加 Marshall 藍牙音響抽獎", stage: "初審", start: "2026-11-08", small: true },
     { date: "11.18", year: "2026", title: "報名繳件截止", desc: "報名表與初審繳件資料（23:59 截止）", stage: "初審", start: "2026-11-18" },
     { date: "12.01", year: "2026", title: "複審名單公布", desc: "公布媒合組隊結果與複審題目", stage: "複審", start: "2026-12-01" },
     { date: "12.27", year: "2026", title: "複審收件", desc: "繳交團隊提案企劃與人氣獎圖文（23:59 截止）", stage: "複審", start: "2026-12-27" },
@@ -224,7 +224,7 @@ window.SITE = {
     topThree: ["獎盃乙座", "獎狀乙紙", "參賽證明", "保送暑期 CIP 面試機會"],
     finalists: "入圍決賽參賽者可享有工作坊課程、Mentor 輔導。",
     everyone: "所有隊伍可獲得參賽證明，並享有每年 8 月參與不動產回娘家活動與正職交流的機會。",
-    earlyBird: "11.08（日）前完成早鳥報名，即有機會抽 Marshall 藍牙音響！",
+    earlyBird: "11.08（日）前完成報名並繳件，即可參加 Marshall 藍牙音響抽獎！",
     travel: {
       title: "差旅補助",
       rules: [
