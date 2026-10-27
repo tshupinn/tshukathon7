@@ -298,42 +298,42 @@ window.SITE = {
       desc: "北中南共計 6 棟老舊大樓面臨租約到期，不管用改建或重建，重新賦予它年輕活力吧！",
       team: "IDEM Lab", highlight: "Cathay Hive：以體驗、交流為核心打造新世代",
       youtube: "",
-      photos: ["assets/img/history/ed1-1.webp", "assets/img/history/ed1-2.webp"]
+      photos: ["assets/img/history/ed1-1.webp?v=2", "assets/img/history/ed1-2.webp?v=2"]
     },
     {
       no: 2, year: "2022", title: "大樓群管理＋新商模",
       desc: "桃園、苗栗、彰化、台南等 4 組區域大樓群，構思一套新商業模式串聯，活絡當地發展吧！",
       team: "蛋蛋之家", highlight: "打造壯世代商業模式",
       youtube: "",
-      photos: ["assets/img/history/ed2-1.webp", "assets/img/history/ed2-2.webp"]
+      photos: ["assets/img/history/ed2-1.webp?v=2", "assets/img/history/ed2-2.webp?v=2"]
     },
     {
       no: 3, year: "2023", title: "建物再生永續計畫",
       desc: "台北、台中、台南三棟建物，透過改建或重建，發想創新經營模式，以達到永續再生願景。",
       team: "城城城城鎮財地建建建", highlight: "打造環境與社會共存的未來建設",
       youtube: "https://www.youtube.com/watch?v=8qHcu-sgZ7s",
-      photos: ["assets/img/history/ed3-1.webp", "assets/img/history/ed3-2.webp"]
+      photos: ["assets/img/history/ed3-1.webp?v=2", "assets/img/history/ed3-2.webp?v=2"]
     },
     {
       no: 4, year: "2024", title: "桃園高鐵站前開發案",
       desc: "以「智慧城市、企業永續、低碳營運」為三大目標，將 10,000 坪的「夢想基地空間」與 6,050 坪的「廣場綠地」注入細緻的生命。",
       team: "木兆建設", highlight: "透過貨櫃屋、機器吊臂，打造不受框架侷限，具備職家平衡、休閒遊憩及新創產業聚落的新型態空間",
       youtube: "",
-      photos: ["assets/img/history/ed4-1.webp", "assets/img/history/ed4-2.webp"]
+      photos: ["assets/img/history/ed4-1.webp?v=2", "assets/img/history/ed4-2.webp?v=2"]
     },
     {
       no: 5, year: "2025", title: "自選標的建構新世代智慧城",
       desc: "自選區域土地開發（基地面積限 1,000－6,000 坪），以新視角、智慧綠能、城市新潛力為核心理念，發掘具投資開發潛力的土地，共築未來智慧城市樣貌。",
       team: "碳考跡排", highlight: "關注碳權議題，構想綠能與在地小農結合的創新商模，透過回饋鄉里與小農互惠合作",
       youtube: "",
-      photos: ["assets/img/history/ed5-1.webp", "assets/img/history/ed5-2.webp"]
+      photos: ["assets/img/history/ed5-1.webp?v=2", "assets/img/history/ed5-2.webp?v=2"]
     },
     {
       no: 6, year: "2026", title: "校園潛力之星聯展",
       desc: "在【城市首映會】中，團隊以專業知識 x 創意思維，描繪心中理想的生活場域與空間共舞，共同詮釋具有創意韌性的城市空間規劃提案！",
       team: "森遷加新", highlight: "結合台南車站及綠植等元素串聯車站廊帶，打造工作、休閒生活兼具的台南都市綠洲",
       youtube: "",
-      photos: ["assets/img/history/ed6-1.webp", "assets/img/history/ed6-2.webp"]
+      photos: ["assets/img/history/ed6-1.webp?v=2", "assets/img/history/ed6-2.webp?v=2"]
     }
   ],
 

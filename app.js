@@ -459,7 +459,7 @@
               '<div class="car__stage">' + slides + '</div>' +
               (n > 1 ? '<div class="car__ctl"><div class="car__dots">' + new Array(n + 1).join('x').split('').map(function (_, k) {
                 return '<button type="button" aria-label="第 ' + (k + 1) + ' 張"' + (k === 0 ? ' aria-current="true"' : '') + '><i></i></button>';
-              }).join('') + '</div><span class="car__cap">作品圖取自歷屆簡章</span><div class="car__arrows">' +
+              }).join('') + '</div><span class="car__cap">圖取自隊伍提案簡報</span><div class="car__arrows">' +
                 '<button class="prev" type="button" aria-label="上一張">' + icon('i-play', '') + '</button>' +
                 '<button class="next" type="button" aria-label="下一張">' + icon('i-play', '') + '</button></div></div>' : '') +
             '</div>' +
