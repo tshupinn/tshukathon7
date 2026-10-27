@@ -299,13 +299,17 @@
     });
     $('#time-body').innerHTML =
       secHead('time-h', '競賽時程', '', 'SCHEDULE', 'p-calendar') +
-      '<ol class="tl">' + items.map(function (o) {
+      '<ol class="tl">' + items.map(function (o, i) {
         var x = o.x;
+        // 每個年度第一筆前面放年份標示（2026、2027），跨年一眼看得出來
+        var yr = String(x.year || String(x.start).slice(0, 4));
+        var prevYr = i ? String(items[i - 1].x.year || String(items[i - 1].x.start).slice(0, 4)) : '';
+        var yrRow = yr !== prevYr ? '<li class="tl__yr' + (i ? '' : ' is-first') + '"><span class="tl__yrtag">' + esc(yr) + '</span></li>' : '';
         var badge = o.state === 'now' ? '<span class="tl__badge">進行中</span>' : o.state === 'next' ? '<span class="tl__badge">下一站</span>' : '';
         var md = function (d) { var p = String(d).slice(0, 10).split('-'); return p[1] + '.' + p[2]; };
         var piece = function (d) { return '<span class="nw"><b class="tl__md">' + md(d) + '</b><span class="tl__wk">（' + wk(d) + '）</span></span>'; };
         var when = piece(x.start) + (x.end && /－/.test(x.date) ? '<span class="tl__dash">－</span>' + piece(x.end) : '');
-        return '<li class="tl__item' + (x.stage === '初審' ? ' tl--first' : ' tl--later') + (x.small ? ' is-small' : '') + (o.state ? ' is-' + o.state : '') + '">' +
+        return yrRow + '<li class="tl__item' + (x.stage === '初審' ? ' tl--first' : ' tl--later') + (x.small ? ' is-small' : '') + (o.state ? ' is-' + o.state : '') + '">' +
           '<span class="tl__dot" aria-hidden="true"><i></i></span>' +
           '<div class="tl__when"><p class="tl__date">' + when + '</p></div>' +
           '<div class="tl__what"><span class="tl__stage' + (x.stage === '初審' ? ' tl__stage--first' : '') + '">' + esc(x.stage) + '</span>' +

@@ -2054,3 +2054,15 @@ html.is-maint, html.is-maint body { overflow: hidden !important; }
 .maint__btns { margin-top: 26px; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
 .maint__btn { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 10px 24px; border-radius: 999px; border: 2px solid #fff; color: #fff; font-weight: 700; text-decoration: none; }
 .maint__btn--lime { background: var(--lime, #d9e367); border-color: var(--lime, #d9e367); color: var(--ink, #2b2b2b); }
+
+/* 競賽時程：年度標示（每年第一筆前面一個 2026／2027 牌子，軸線從中間穿過） */
+.tl__yr { position: relative; display: grid; grid-template-columns: 34px 1fr; column-gap: 16px; padding: 4px 0 26px; }
+.tl__yr::before { content: ""; position: absolute; left: 16px; top: 0; bottom: 0; width: 2px; background: var(--line-d); }
+.tl__yr.is-first { padding-top: 0; }
+.tl__yr.is-first::before { top: 50%; }
+.tl__yrtag { grid-column: 1 / -1; justify-self: start; position: relative; z-index: 1; font-family: var(--f-pixel); font-size: 17px; line-height: 1; letter-spacing: .14em; color: var(--ink); background: var(--text); padding: 7px 10px 6px 12px; border-radius: 4px; width: max-content; white-space: nowrap; }
+@media (min-width: 900px) {
+  .tl__yr { grid-template-columns: var(--dc) 34px 1fr; column-gap: 20px; padding: 6px 0 30px; }
+  .tl__yr::before { left: calc(var(--dc) + 20px + 16px); }
+  .tl__yrtag { grid-column: 2; justify-self: center; font-size: 19px; }
+}
