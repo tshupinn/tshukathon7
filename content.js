@@ -329,7 +329,7 @@ window.SITE = {
       photos: ["assets/img/history/ed5-1.webp?v=2", "assets/img/history/ed5-2.webp?v=2"]
     },
     {
-      no: 6, year: "2026", title: "校園潛力之星聯展",
+      no: 6, year: "2026", title: "潛力之星校園聯展",
       desc: "在【城市首映會】中，團隊以專業知識 x 創意思維，描繪心中理想的生活場域與空間共舞，共同詮釋具有創意韌性的城市空間規劃提案！",
       team: "森遷加新", highlight: "結合台南車站及綠植等元素串聯車站廊帶，打造工作、休閒生活兼具的台南都市綠洲",
       youtube: "",
