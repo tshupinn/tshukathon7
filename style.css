@@ -258,7 +258,7 @@ html { scrollbar-color: var(--ink) var(--paper); }
   position: relative; width: 100%; max-width: calc(1440px); margin: 0 auto; padding: 0 var(--gutter);
   display: grid; gap: 32px; align-items: end;
 }
-.hero__pixel { width: clamp(240px, 36vw, 560px); height: auto; aspect-ratio: 529 / 243; fill: var(--ink); }
+.hero__pixel { width: clamp(240px, 36vw, 560px); height: auto; aspect-ratio: 529 / 256.9; fill: var(--ink); }   /* 上方留空間給「×」，不會被裁掉 */
 .hero__title { margin-top: 14px; font-family: var(--f-head); font-weight: 700; letter-spacing: .06em; line-height: 1.35; }
 .hero__title span { display: block; }
 .hero__title span:first-child { font-size: clamp(14px, 1.2vw, 17px); letter-spacing: .3em; color: var(--ink-2); }
