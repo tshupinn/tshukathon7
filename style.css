@@ -2034,3 +2034,11 @@ html.shot .dlg[open] { animation: none !important; }
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-property: opacity, color, background-color, border-color !important; }
 }
+
+/* 繳件規定：只在詞與詞之間換行（app.js wordWrap 放的 <wbr>）、標點不放行首，左右對齊（各種寬度都一樣）；標題、檔名、信箱不拆開 */
+.deliv__item ul li { word-break: keep-all; line-break: strict; text-align: justify; text-justify: auto; }
+/* 900–1199：三欄太窄，改成兩欄，決賽（內容很少）放下面一整排；1200 以上三欄，決賽欄窄一點 */
+@media (min-width: 900px) { .deliv__list { grid-template-columns: 1fr 1fr; } .deliv__item:nth-child(3) { grid-column: 1 / -1; } }
+@media (min-width: 1200px) { .deliv__list { grid-template-columns: 1.2fr 1.2fr .75fr; } .deliv__item:nth-child(3) { grid-column: auto; } }
+.deliv__label, .deliv__item .nw { white-space: nowrap; }
+.deliv__label { display: inline-block; }   /* 標題自己一塊，對齊時不會被拉開字距 */

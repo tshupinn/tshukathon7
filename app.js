@@ -27,6 +27,37 @@
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
     });
   }
+  // 中文長段落：用瀏覽器內建斷詞，只在「詞和詞之間」放換行點（<wbr>），搭配 keep-all 就不會把詞切成兩行；
+  // 信箱整段不拆（檔名裡的中文照詞換行，副檔名本來就用 U+2060 黏住）。瀏覽器不支援斷詞時，照原本只在標點處換行
+  var zhSeg = (window.Intl && Intl.Segmenter) ? new Intl.Segmenter('zh-Hant', { granularity: 'word' }) : null;
+  var KEEP_WORDS = ['字內', '隊名', '姓名', '資料夾', '報名表單', '像素', '一頁式', '同一個', '再把', '可至', '封面', '封底', '都市計畫', '參考資料', '來源', '雲端連結', '分享權限', '共用權限', '逾期不候', '厝邊信箱', '隊伍名稱', '提案介紹', '介紹文案', '課堂專題', '競賽作品', '作品集', '皆可', '必要項目', '獨立完成', '自行製作', '擴增頁面', '相關附件', '重點截圖', '編排不拘', '轉成'];
+  var CJK = /[㐀-鿿]/;
+  function wordWrap(s) {
+    return String(s).split(/([\w.⁠]+@[\w.⁠]+)/).map(function (part, i) {
+      if (i % 2) return '<span class="nw">' + esc(part) + '</span>';
+      if (!zhSeg) return esc(part);
+      var cut = {};   // 可以換行的位置（字的索引）
+      for (var it = zhSeg.segment(part)[Symbol.iterator](), r = it.next(); !r.done; r = it.next()) {
+        var p = r.value.index;
+        if (p > 0 && CJK.test(part.charAt(p - 1)) && CJK.test(part.charAt(p))) cut[p] = 1;
+      }
+      KEEP_WORDS.forEach(function (w) {   // 斷詞切錯的詞，裡面不准換行
+        for (var at = part.indexOf(w); at > -1; at = part.indexOf(w, at + 1)) for (var q = at + 1; q < at + w.length; q++) delete cut[q];
+      });
+      var out = '', stop = -1;
+      for (var c = 0; c < part.length; c++) {
+        var ch = part.charAt(c);
+        if (c === stop) { out += '</span>'; stop = -1; }
+        if (cut[c] && stop < 0) out += '<wbr>';
+        // 開括號和後面一個字包成一組，不讓括號留在行尾
+        if (stop < 0 && '「【（'.indexOf(ch) > -1) {
+          stop = Math.min(c + 2, part.length); out += '<span class="nw">';
+        }
+        out += esc(ch);
+      }
+      return out + (stop > -1 ? '</span>' : '');
+    }).join('');
+  }
   function isTBD(v) { return v == null || String(v).trim() === '' || String(v).trim() === '待填'; }
   var TBD = '<span class="tbd">待填</span>';
   function t(v) { return isTBD(v) ? TBD : esc(v); }
@@ -130,7 +161,7 @@
           r.items.map(function (i) { return '<li>' + esc(i) + '</li>'; }).join('') + '</ul></section>';
       }).join('') + '</div>' +
       (G.rulesNote ? '<p class="rules-note">' + icon('p-clock', '') + '<span>' + esc(G.rulesNote) + '</span></p>' : '') +
-      '<div class="deliv"><h3>' + icon('p-upload', '') + '<span>繳件規定</span></h3><ol class="deliv__list">' + G.deliverables.map(function (d, i) {
+      '<div class="deliv" id="deliv"><h3>' + icon('p-upload', '') + '<span>繳件規定</span></h3><ol class="deliv__list">' + G.deliverables.map(function (d, i) {
         var tbd = d.items.length === 1 && (isTBD(d.items[0]) || d.items[0] === '待公告');
         return '<li class="deliv__item' + (tbd ? ' is-tbd' : '') + '"><div class="deliv__top"><span class="deliv__no">0' + (i + 1) + '</span>' +
           '<h4>' + esc(d.stage) + '<small>｜' + esc(d.who) + '</small></h4></div>' +
@@ -138,7 +169,7 @@
           (tbd ? '<p class="deliv__tbd">' + icon('p-clock', '') + '<span>繳件規定將於公告題目時一併公布</span></p>'
                : '<ul>' + d.items.map(function (x) {
                    var k = x.indexOf('：');
-                   return '<li>' + (k > 0 && k <= 16 ? '<b class="deliv__label">' + esc(x.slice(0, k)).replace(/）$/, '<span class="halt">）</span>') + '</b>：' + esc(x.slice(k + 1)) : esc(x)) + '</li>';
+                   return '<li>' + (k > 0 && k <= 16 ? '<b class="deliv__label">' + esc(x.slice(0, k)).replace(/）$/, '<span class="halt">）</span>') + '</b>：' + wordWrap(x.slice(k + 1)) : wordWrap(x)) + '</li>';
                  }).join('') + '</ul>') + '</li>';
       }).join('') + '</ol></div>' +
       '<div class="cta-row">' +
