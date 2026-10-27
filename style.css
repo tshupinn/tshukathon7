@@ -2066,3 +2066,8 @@ html.is-maint, html.is-maint body { overflow: hidden !important; }
   .tl__yr::before { left: calc(var(--dc) + 20px + 16px); }
   .tl__yrtag { grid-column: 2; justify-self: center; font-size: 19px; }
 }
+
+/* 首頁大日期：標題列右邊的年份小牌子 */
+.kd__item dt { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.kd__item .kd__yr { font-family: var(--f-pixel); font-weight: 400; font-size: 13px; line-height: 1; letter-spacing: .12em; padding: 4px 5px 3px 7px; border: 1.5px solid currentColor; border-radius: 4px; white-space: nowrap; color: var(--ink); }
+.kd__item:first-child .kd__yr { color: var(--lime); }

@@ -715,7 +715,8 @@
     var box = $('#key-dates'); if (!box) return;
     box.innerHTML = S.hero.keyDates.map(function (d) {
       var w = '（' + wk(d.date) + (d.end ? '－' + wk(d.end) : '') + '）';
-      return '<div class="kd__item"><dt>' + esc(d.label) + '</dt><dd><b class="nw">' + esc(d.show) + '</b></dd>' + (d.note ? '<p class="kd__note">' + esc(d.note) + '</p>' : '') + '</div>';
+      var yr = String(d.date).slice(0, 4);   // 年份小牌子（跨年度一眼看得出來）
+      return '<div class="kd__item"><dt>' + esc(d.label) + '<span class="kd__yr">' + esc(yr) + '</span></dt><dd><b class="nw">' + esc(d.show) + '</b></dd>' + (d.note ? '<p class="kd__note">' + esc(d.note) + '</p>' : '') + '</div>';
     }).join('');
   })();
 
