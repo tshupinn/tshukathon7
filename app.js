@@ -7,6 +7,26 @@
   var S = window.SITE;
   if (!S) return;
 
+  /* ---------- 網站維護中：content.js 的 maintenance.on = true 時，蓋上一整頁提示 ---------- */
+  (function () {
+    var m = S.maintenance;
+    if (!m || !m.on || /[?&]preview=site\b/.test(location.search)) return;
+    var e = function (v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+    var url = function (u) { u = String(u || ''); return /^https?:\/\//i.test(u) ? e(u) : ''; };
+    var L = S.links || {};
+    var box = document.createElement('div');
+    box.className = 'maint'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-modal', 'true'); box.setAttribute('aria-labelledby', 'maint-h');
+    box.innerHTML = '<div class="maint__card"><p class="maint__brand">厝客松 Tshu<sup>7</sup>Kathon</p>' +
+      '<h1 class="maint__title" id="maint-h">' + e(m.title || '網站更新中') + '</h1>' +
+      '<p class="maint__text">' + e(m.text || '').replace(/\n/g, '<br>') + '</p>' +
+      '<div class="maint__btns">' +
+        (url(L.register) ? '<a class="maint__btn maint__btn--lime" href="' + url(L.register) + '" target="_blank" rel="noopener">前往報名表單</a>' : '') +
+        (url(L.line) ? '<a class="maint__btn" href="' + url(L.line) + '" target="_blank" rel="noopener">加入厝邊 LINE</a>' : '') +
+      '</div></div>';
+    document.documentElement.classList.add('is-maint');
+    document.body.appendChild(box);
+  })();
+
   /* ---------- 小工具 ---------- */
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };

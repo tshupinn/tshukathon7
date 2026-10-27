@@ -2042,3 +2042,15 @@ html.shot .dlg[open] { animation: none !important; }
 @media (min-width: 1200px) { .deliv__list { grid-template-columns: 1.2fr 1.2fr .75fr; } .deliv__item:nth-child(3) { grid-column: auto; } }
 .deliv__label, .deliv__item .nw { white-space: nowrap; }
 .deliv__label { display: inline-block; }   /* 標題自己一塊，對齊時不會被拉開字距 */
+
+/* 網站維護中（content.js 的 maintenance.on = true 時出現） */
+html.is-maint, html.is-maint body { overflow: hidden !important; }
+.maint { position: fixed; inset: 0; z-index: 9999; display: grid; place-items: center; padding: 24px 16px; background: var(--ink, #2b2b2b); color: #fff; overflow-y: auto; }
+.maint__card { width: min(560px, 100%); text-align: center; padding: clamp(28px, 6vw, 48px) clamp(20px, 5vw, 44px); border-radius: 24px; border: 1.5px solid rgba(255,255,255,.2); background: rgba(255,255,255,.06); }
+.maint__brand { font-family: var(--f-body); font-weight: 700; font-size: 18px; letter-spacing: .08em; color: var(--lime, #d9e367); }
+.maint__brand sup { font-size: .6em; }
+.maint__title { margin-top: 14px; font-family: var(--f-body); font-weight: 700; font-size: clamp(26px, 5vw, 36px); line-height: 1.35; letter-spacing: .04em; word-break: keep-all; }
+.maint__text { margin-top: 14px; font-size: 16px; line-height: 1.85; color: rgba(255,255,255,.85); word-break: keep-all; }
+.maint__btns { margin-top: 26px; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+.maint__btn { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 10px 24px; border-radius: 999px; border: 2px solid #fff; color: #fff; font-weight: 700; text-decoration: none; }
+.maint__btn--lime { background: var(--lime, #d9e367); border-color: var(--lime, #d9e367); color: var(--ink, #2b2b2b); }
