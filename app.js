@@ -391,7 +391,9 @@
     });
     var m = location.search.match(/[?&]team=([^&#]+)/);
     if (m) {
-      var card = document.querySelector('.share[data-share="' + decodeURIComponent(m[1]) + '"]');
+      // 網址參數可能被亂改：解碼失敗或含特殊字元都不要讓整頁壞掉
+      var key = ''; try { key = decodeURIComponent(m[1]); } catch (err) { key = ''; }
+      var card = key ? $$('.share[data-share]').filter(function (el) { return el.getAttribute('data-share') === key; })[0] : null;
       if (card) { card = card.closest('.team'); card.classList.add('is-target'); if (window.top === window) setTimeout(function () { card.scrollIntoView({ block: 'center' }); }, 300); }
     }
   }
