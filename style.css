@@ -2071,3 +2071,9 @@ html.is-maint, html.is-maint body { overflow: hidden !important; }
 .kd__item dt { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .kd__item .kd__yr { font-family: var(--f-pixel); font-weight: 400; font-size: 13px; line-height: 1; letter-spacing: .12em; padding: 4px 5px 3px 7px; border: 1.5px solid currentColor; border-radius: 4px; white-space: nowrap; color: var(--ink); }
 .kd__item:first-child .kd__yr { color: var(--lime); }
+
+/* 2026-10-29 初審題目補充：頁數不限、基地引言（依簡章第 14 頁） */
+.brief .brief__rule { display: inline-flex; align-items: center; gap: 8px; margin-top: 14px; padding: 6px 14px; border-radius: 999px; background: var(--lime); color: #2a2b2b !important; font-weight: 700; font-size: 15px; line-height: 1.5; letter-spacing: .04em; }
+.site-lead { margin: clamp(48px, 7vw, 88px) auto 0; max-width: 46em; text-align: center; font-family: var(--f-head); font-weight: 700; font-size: clamp(17px, 1.6vw, 20px); line-height: 1.8; letter-spacing: .04em; color: var(--lime); }
+.stage .site-lead + .site { margin-top: clamp(20px, 2.6vw, 32px); }
+.site-lead { text-wrap: balance; }

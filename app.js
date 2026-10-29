@@ -232,7 +232,7 @@
           '<span class="stage-tabs__go" aria-hidden="true">' + icon('i-play', '') + '</span></button>';
       }).join('') + '</div>' +
       '<div class="stage" id="stage-first" role="tabpanel" aria-labelledby="tab-stage-first">' +
-        '<div class="brief"><h3>初審題目｜' + esc(T.missionSub) + '</h3><p>' + esc(T.brief) + '</p><p class="brief__q">' + esc(T.question) + '</p></div>' +
+        '<div class="brief"><h3>初審題目｜' + esc(T.missionSub) + '</h3>' + (T.firstRule ? '<p class="brief__rule">' + esc(T.firstRule) + '</p>' : '') + '<p>' + esc(T.brief) + '</p><p class="brief__q">' + esc(T.question) + '</p></div>' +
         '<div class="mission"><div class="mission__head"><h3>' + esc(T.missionTitle) + '</h3></div>' +
           '<div class="mission__row">' +
             T.missions.map(function (m, i) {
@@ -240,6 +240,7 @@
                 '<div class="mis"><img src="' + esc(m.img) + '" alt="" width="800" height="800" loading="lazy"><div><h4>' + esc(m.name) + '</h4><p>' + esc(m.desc) + '</p></div></div>';
             }).join('') +
           '</div></div>' +
+        (s.lead ? '<p class="site-lead">' + esc(s.lead).replace(/\n/g, '<br class="br-d">') + '</p>' : '') +
         '<div class="site">' +
           '<div class="site__plan"><h3>' + esc(s.name) + '</h3><p class="addr">' + esc(s.address) + '</p>' + plan +
             '</div>' +
